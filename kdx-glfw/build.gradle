@@ -1,0 +1,36 @@
+apply plugin: 'konan'
+
+konan.targets = ['macbook', 'linux', 'mingw']
+
+konanArtifacts {
+    interop('libglew') {
+        target('mingw') {
+            defFile 'src/main/c_interop/libglew.def'
+            includeDirs 'C:/Users/Scellow/.konan/dependencies/msys2-mingw-w64-x86_64-gcc-7.2.0-clang-llvm-5.0.0-windows-x86-64/include'
+        }
+    }
+    interop('libglfw') {
+        target('mingw') {
+            defFile 'src/main/c_interop/libglfw.def'
+            includeDirs 'C:/Users/Scellow/.konan/dependencies/msys2-mingw-w64-x86_64-gcc-7.2.0-clang-llvm-5.0.0-windows-x86-64/include'
+        }
+    }
+
+    program('kdx-glfw') {
+        libraries {
+            artifact project(':kdx'), 'kdx'
+            artifact project(':platform-windows'), 'platform-windows'
+            artifact 'libglew'
+            artifact 'libglfw'
+        }
+
+        //srcFiles 'src/main/kotlin/main.kt'
+
+        // windows
+        linkerOpts '-v -LC:/Users/Scellow/.konan/dependencies/msys2-mingw-w64-x86_64-gcc-7.2.0-clang-llvm-5.0.0-windows-x86-64/lib -lglew32 -lopengl32 -lglfw3'
+
+
+        // macOs
+        //linkerOpts '-L/usr/local/Cellar/glfw/3.2.1/lib -L/usr/local/Cellar/glew/2.1.0/lib -lGLEW -lglfw -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo'
+    }
+}

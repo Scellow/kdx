@@ -1,0 +1,12 @@
+apply plugin: 'konan'
+
+konanArtifacts {
+    library('platform-windows') {
+        enableMultiplatform true
+        srcDir 'main'
+    }
+}
+
+dependencies {
+    expectedBy project(':platform-common')
+}

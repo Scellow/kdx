@@ -1,0 +1,8 @@
+headers = GL/glew.h
+compilerOpts =
+excludedFunctions =
+compilerOpts.linux = -I/usr/include
+compilerOpts.osx = -I/usr/local/include
+
+staticLibraries = libglew32.a
+libraryPaths = /opt/local/lib /usr/local/opt/curl/lib C:/msys64/mingw64/lib

@@ -1,0 +1,30 @@
+apply plugin: 'konan'
+
+konan.targets = ['macbook', 'linux', 'mingw']
+
+konanArtifacts {
+    interop('libglew') {
+        target('mingw') {
+            defFile 'src/main/c_interop/libglew.def'
+            includeDirs 'C:/Users/Scellow/.konan/dependencies/msys2-mingw-w64-x86_64-gcc-7.2.0-clang-llvm-5.0.0-windows-x86-64/include'
+        }
+    }
+    interop('libglfw') {
+        target('mingw') {
+            defFile 'src/main/c_interop/libglfw.def'
+            includeDirs 'C:/Users/Scellow/.konan/dependencies/msys2-mingw-w64-x86_64-gcc-7.2.0-clang-llvm-5.0.0-windows-x86-64/include'
+        }
+    }
+
+    library('kdx') {
+        libraries {
+            artifact 'libglew'
+            artifact 'libglfw'
+        }
+
+        //srcFiles 'src/main/kotlin/main.kt'
+
+        //linkerOpts '-L/usr/local/Cellar/glfw/3.2.1/lib -lglfw -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo'
+        linkerOpts '-v -LC:/Users/Scellow/.konan/dependencies/msys2-mingw-w64-x86_64-gcc-7.2.0-clang-llvm-5.0.0-windows-x86-64/lib  -lglew32 -lglfw3'
+    }
+}
