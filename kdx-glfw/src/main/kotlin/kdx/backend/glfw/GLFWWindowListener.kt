@@ -1,6 +1,7 @@
 package kdx.backend.glfw
 
-public interface GLFWWindowListener {
+public interface GLFWWindowListener
+{
 	fun created(window: GLFWWindow)
 	fun iconified(isIconified: Boolean)
 

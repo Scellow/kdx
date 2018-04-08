@@ -12,6 +12,7 @@ interface InputProcessor
     fun scrolled(amount: Int): Boolean
 }
 
+
 interface Input
 {
     interface TextInputListener

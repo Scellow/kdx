@@ -4,7 +4,6 @@ import kdx.files.FileHandle
 
 interface Files
 {
-
     enum class FileType
     {
         Classpath,

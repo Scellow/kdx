@@ -24,13 +24,14 @@ konanArtifacts {
             artifact 'libglfw'
         }
 
-        //srcFiles 'src/main/kotlin/main.kt'
 
-        // windows
-        linkerOpts '-v -LC:/Users/Scellow/.konan/dependencies/msys2-mingw-w64-x86_64-gcc-7.2.0-clang-llvm-5.0.0-windows-x86-64/lib -lglew32 -lopengl32 -lglfw3'
+        target('mingw') {
+            linkerOpts '-v -LC:/Users/Scellow/.konan/dependencies/msys2-mingw-w64-x86_64-gcc-7.2.0-clang-llvm-5.0.0-windows-x86-64/lib -lglew32 -lopengl32 -lglfw3'
 
+        }
 
-        // macOs
-        //linkerOpts '-L/usr/local/Cellar/glfw/3.2.1/lib -L/usr/local/Cellar/glew/2.1.0/lib -lGLEW -lglfw -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo'
+        target('macbook') {
+            linkerOpts '-L/usr/local/Cellar/glfw/3.2.1/lib -L/usr/local/Cellar/glew/2.1.0/lib -lGLEW -lglfw -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo'
+        }
     }
 }

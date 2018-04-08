@@ -2,126 +2,281 @@ package kdx.backend.glfw
 
 import kdx.*
 
+
 class GLFWInput(val window: GLFWWindow) : Input
 {
+    private var inputProcessor: InputProcessor? = null
+    private val eventQueue = InputEventQueue()
+
+    private var mouseX: Int = 0
+    private var mouseY:Int = 0
+    private var mousePressed: Int = 0
+    private var deltaX: Int = 0
+    private var deltaY:Int = 0
+    private var justTouched: Boolean = false
+    private var pressedKeys: Int = 0
+    private var keyJustPressed: Boolean = false
+    private val justPressedKeys = BooleanArray(256)
+    private var lastCharacter: Char = ' '
+
     init
     {
-        windowHandleChanged(window.windowHandle)
+        windowHandleChanged(window.getWindowHandle())
     }
 
-    override val accelerometerX: Float
-        get() = TODO("not implemented") 
-    override val accelerometerY: Float
-        get() = TODO("not implemented") 
-    override val accelerometerZ: Float
-        get() = TODO("not implemented") 
-    override val gyroscopeX: Float
-        get() = TODO("not implemented") 
-    override val gyroscopeY: Float
-        get() = TODO("not implemented") 
-    override val gyroscopeZ: Float
-        get() = TODO("not implemented") 
-    override val x: Int
-        get() = TODO("not implemented") 
-    override val deltaX: Int
-        get() = TODO("not implemented") 
-    override val y: Int
-        get() = TODO("not implemented") 
-    override val deltaY: Int
-        get() = TODO("not implemented") 
-    override val isTouched: Boolean
-        get() = TODO("not implemented") 
-    override val azimuth: Float
-        get() = TODO("not implemented") 
-    override val pitch: Float
-        get() = TODO("not implemented") 
-    override val roll: Float
-        get() = TODO("not implemented") 
-    override val currentEventTime: Long
-        get() = TODO("not implemented") 
-    override var isCatchBackKey: Boolean
-        get() = TODO("not implemented") 
-        set(value) {}
-    override var isCatchMenuKey: Boolean
-        get() = TODO("not implemented") 
-        set(value) {}
-    override var inputProcessor: InputProcessor
-        get() = TODO("not implemented") 
-        set(value) {}
-    override val rotation: Int
-        get() = TODO("not implemented") 
-    override val nativeOrientation: Input.Orientation
-        get() = TODO("not implemented") 
-    override var isCursorCatched: Boolean
-        get() = TODO("not implemented") 
-        set(value) {}
-
-    override fun getX(pointer: Int): Int {
-        TODO("not implemented")
+    internal fun resetPollingStates()
+    {
+        justTouched = false
+        keyJustPressed = false
+        for (i in justPressedKeys.indices)
+        {
+            justPressedKeys[i] = false
+        }
+        eventQueue.setProcessor(null)
+        eventQueue.drain()
     }
 
-    override fun getDeltaX(pointer: Int): Int {
-        TODO("not implemented")
+    fun windowHandleChanged(windowHandle: Long)
+    {
+        resetPollingStates()
+        glfwSetKeyCallback(window.getWindowHandle(), keyCallback)
+        glfwSetCharCallback(window.getWindowHandle(), charCallback)
+        glfwSetScrollCallback(window.getWindowHandle(), scrollCallback)
+        glfwSetCursorPosCallback(window.getWindowHandle(), cursorPosCallback)
+        glfwSetMouseButtonCallback(window.getWindowHandle(), mouseButtonCallback)
     }
 
-    override fun getY(pointer: Int): Int {
-        TODO("not implemented")
+    internal fun update()
+    {
+        eventQueue.setProcessor(inputProcessor)
+        eventQueue.drain()
     }
 
-    override fun getDeltaY(pointer: Int): Int {
-        TODO("not implemented")
+    internal fun prepareNext()
+    {
+        justTouched = false
+
+        if (keyJustPressed)
+        {
+            keyJustPressed = false
+            for (i in justPressedKeys.indices)
+            {
+                justPressedKeys[i] = false
+            }
+        }
+        deltaX = 0
+        deltaY = 0
     }
 
-    override fun justTouched(): Boolean {
-        TODO("not implemented")
+
+    override fun getAccelerometerX(): Float
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun isTouched(pointer: Int): Boolean {
-        TODO("not implemented")
+    override fun getAccelerometerY(): Float
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun isButtonPressed(button: Int): Boolean {
-        TODO("not implemented")
+    override fun getAccelerometerZ(): Float
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun isKeyPressed(key: Int): Boolean {
-        TODO("not implemented")
+    override fun getGyroscopeX(): Float
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun isKeyJustPressed(key: Int): Boolean {
-        TODO("not implemented")
+    override fun getGyroscopeY(): Float
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun getTextInput(listener: Input.TextInputListener, title: String, text: String, hint: String) {
-        TODO("not implemented")
+    override fun getGyroscopeZ(): Float
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun setOnscreenKeyboardVisible(visible: Boolean) {
-        TODO("not implemented")
+    override fun getX(): Int
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun vibrate(milliseconds: Int) {
-        TODO("not implemented")
+    override fun getX(pointer: Int): Int
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun vibrate(pattern: LongArray, repeat: Int) {
-        TODO("not implemented")
+    override fun getDeltaX(): Int
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun cancelVibrate() {
-        TODO("not implemented")
+    override fun getDeltaX(pointer: Int): Int
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun getRotationMatrix(matrix: FloatArray) {
-        TODO("not implemented")
+    override fun getY(): Int
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun isPeripheralAvailable(peripheral: Input.Peripheral): Boolean {
-        TODO("not implemented")
+    override fun getY(pointer: Int): Int
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun setCursorPosition(x: Int, y: Int) {
-        TODO("not implemented")
+    override fun getDeltaY(): Int
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getDeltaY(pointer: Int): Int
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun isTouched(): Boolean
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun justTouched(): Boolean
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun isTouched(pointer: Int): Boolean
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun isButtonPressed(button: Int): Boolean
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun isKeyPressed(key: Int): Boolean
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun isKeyJustPressed(key: Int): Boolean
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getTextInput(listener: Input.TextInputListener, title: String, text: String, hint: String)
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setOnscreenKeyboardVisible(visible: Boolean)
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun vibrate(milliseconds: Int)
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun vibrate(pattern: Array<Long>, repeat: Int)
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun cancelVibrate()
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getAzimuth(): Float
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getPitch(): Float
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getRoll(): Float
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getRotationMatrix(matrix: Array<Float>)
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getCurrentEventTime(): Long
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setCatchBackKey(catchBack: Boolean)
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun isCatchBackKey(): Boolean
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setCatchMenuKey(catchMenu: Boolean)
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun isCatchMenuKey(): Boolean
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setInputProcessor(processor: InputProcessor)
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getInputProcessor(): InputProcessor
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun isPeripheralAvailable(peripheral: Input.Peripheral): Boolean
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getRotation(): Int
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getNativeOrientation(): Input.Orientation
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setCursorCatched(catched: Boolean)
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun isCursorCatched(): Boolean
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setCursorPosition(x: Int, y: Int)
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
 }

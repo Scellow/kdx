@@ -6,6 +6,17 @@ import sun.security.krb5.internal.tools.Ktab
 
 class GLFWWindow(val listener: ApplicationListener, val config: GLFWConfig)
 {
+    companion object
+    {
+        fun setSizeLimits(windowHandle: CPointer<GLFWwindow>, minWidth: Int, minHeight: Int, maxWidth: Int, maxHeight: Int)
+        {
+            glfwSetWindowSizeLimits(windowHandle,
+                    if (minWidth > -1) minWidth else GLFW_DONT_CARE,
+                    if (minHeight > -1) minHeight else GLFW_DONT_CARE,
+                    if (maxWidth > -1) maxWidth else GLFW_DONT_CARE,
+                    if (maxHeight > -1) maxHeight else GLFW_DONT_CARE)
+        }
+    }
     var windowHandle: CPointer<GLFWwindow>? = null
     var listenerInitialized = false
     var windowListener: GLFWWindowListener? = null
@@ -81,6 +92,43 @@ class GLFWWindow(val listener: ApplicationListener, val config: GLFWConfig)
         Kdx.input = input
 
         glfwMakeContextCurrent(windowHandle)
+    }
+
+    fun getListener(): ApplicationListener
+    {
+        return listener
+    }
+
+    fun getWindowListener(): Lwjgl3WindowListener?
+    {
+        return windowListener
+    }
+
+    fun setWindowListener(listener: Lwjgl3WindowListener)
+    {
+        this.windowListener = listener
+    }
+
+
+    internal fun getGraphics(): GLFWGraphics?
+    {
+        return graphics
+    }
+
+    internal fun getInput(): GLFWInput?
+    {
+        return input
+    }
+
+    fun getWindowHandle(): CPointer<GLFWwindow>?
+    {
+        return windowHandle
+    }
+
+    internal fun windowHandleChanged(windowHandle: CPointer<GLFWwindow>)
+    {
+        this.windowHandle = windowHandle
+        input.windowHandleChanged(windowHandle)
     }
 
     fun dispose()
