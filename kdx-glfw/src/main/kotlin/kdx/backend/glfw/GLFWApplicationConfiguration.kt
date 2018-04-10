@@ -1,5 +1,7 @@
 package kdx.backend.glfw
 
+import kdx.*
+
 class GLFWApplicationConfiguration : GLFWWindowConfiguration()
 {
     enum class HdpiMode

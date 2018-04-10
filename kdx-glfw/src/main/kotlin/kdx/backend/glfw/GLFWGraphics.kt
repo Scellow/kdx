@@ -1,129 +1,271 @@
 package kdx.backend.glfw
 
 import kdx.*
-
+import libglfw.*
+import libglew.*
+import kotlinx.cinterop.*
 import platform.posix.clock
 
-class GLFWGraphics(val config: GLFWConfig) : Graphics {
 
-    private var _frameId: Long = -1
-    private var _deltaTime = 0f
-    private var _frameStart: Long = 0
-    private var _frames = 0
-    private var _fps: Int = 0
-    private var _lastTime = clock() //todo: check if it is the same as System.nanotime()
-    private var _vsync = false
-    private var _resize = false
-    private var _bufferFormat = Graphics.BufferFormat(8, 8, 8, 8, 16, 8, 0, false)
-    private var _isContinuous = true
-    private var _requestRendering = false
-    private var _softwareMode: Boolean = false
-    private var _usingGL30: Boolean = false
+class GLFWDisplayMode(val monitorHandle: CPointer<GLFWmonitor>, val width:Int, val height:Int, val refreshRate:Int, val bitsPerPixel: Int)
+    : Monitor(width, height, refreshRate, bitsPerPixel)
+{
 
-    override val isGL30Available: Boolean
-        get() = true
-
-    override val width: Int
-        get() {
-            return
-        }
-    override val height: Int
-        get() {
-            return 0
-        }
-
-    override val backBufferWidth: Int
-        get() = width
-    override val backBufferHeight: Int
-        get() = height
-
-    override val frameId: Long
-        get() = _frameId
-    override val deltaTime: Float
-        get() = _deltaTime
-    override val rawDeltaTime: Float
-        get() = _deltaTime
-    override val framesPerSecond: Int
-        get() = _fps
-    override val type: Graphics.GraphicsType
-        get() = Graphics.GraphicsType.GLFW
-    override val ppiX: Float
-        get() = 0f
-    override val ppiY: Float
-        get() = 0f
-    override val ppcX: Float
-        get() = 0f
-    override val ppcY: Float
-        get() = 0f
-    override val density: Float
-        get() = 0f
-    override val primaryMonitor: Graphics.Monitor
-        get() = Graphics.Monitor(0, 0, "Primary Monitor")
-    override val monitor: Graphics.Monitor
-        get() = primaryMonitor
-    override val monitors: Array<Graphics.Monitor>
-        get() = arrayOf(primaryMonitor)
-    override val displayModes: Array<Graphics.DisplayMode>
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
-    override val displayMode: Graphics.DisplayMode
-        get() = TODO("not implemented")
-    override val bufferFormat: Graphics.BufferFormat
-        get() = _bufferFormat
-    override var isContinuousRendering: Boolean
-        get() = _isContinuous
-        set(value) {
-            _isContinuous = value
-        }
-    override val isFullscreen: Boolean
-        get() = false
-
-
-    override fun supportsDisplayModeChange(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun getDisplayModes(monitor: Graphics.Monitor): Array<Graphics.DisplayMode> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun getDisplayMode(monitor: Graphics.Monitor): Graphics.DisplayMode {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun setFullscreenMode(displayMode: Graphics.DisplayMode): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun setWindowedMode(width: Int, height: Int): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun setTitle(title: String) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun setUndecorated(undecorated: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun setResizable(resizable: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun setVSync(vsync: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun supportsExtension(extension: String): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun requestRendering() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    fun setupDisplay()
+    fun getMonitor(): CPointer<GLFWmonitor>
     {
-
+        return monitorHandle
     }
+}
+
+class GLFWMonitor(val monitorHandle: CPointer<GLFWmonitor>, val virtualX: Int, val virtualY: Int, val name: String)
+    : Monitor(virtualX, virtualY, name)
+{
+    fun getMonitorHandle(): CPointer<GLFWmonitor>
+    {
+        return monitorHandle
+    }
+}
+
+class GLFWGraphics(val window: GLFWWindow) : Graphics
+{
+    @Volatile
+    private var backBufferWidth: Int = 0
+    @Volatile
+    private var backBufferHeight: Int = 0
+    @Volatile
+    private var logicalWidth: Int = 0
+    @Volatile
+    private var logicalHeight: Int = 0
+    @Volatile
+    private var isContinuous = true
+    private var bufferFormat: BufferFormat? = null
+    private var lastFrameTime: Long = -1
+    private var deltaTime: Float = 0f
+    private var frameId: Long = 0
+    private var frameCounterStart: Long = 0
+    private var frames: Int = 0
+    private var fps: Int = 0
+    private var windowPosXBeforeFullscreen: Int = 0
+    private var windowPosYBeforeFullscreen: Int = 0
+    private var displayModeBeforeFullscreen: DisplayMode? = null
+
+    init
+    {
+        updateFramebufferInfo()
+        // TODO: properly handle GL2/GL3
+        //initiateGL()
+        // TODO: handle callbacks
+        //GLFW.glfwSetFramebufferSizeCallback(window.getWindowHandle(), resizeCallback)
+    }
+
+    private fun updateFramebufferInfo()
+    {
+        memscoped {
+            var buffer1 = alloc<IntVar>()
+            var buffer2 = alloc<IntVar>()
+            glfwGetFramebufferSize(window.getWindowHandle(), buffer1, buffer2)
+            backBufferWidth = buffer1.value
+            backBufferHeight = buffer2.value
+
+            glfwGetWindowSize(window.getWindowHandle(), buffer1, buffer2)
+            logicalWidth = buffer1.value
+            logicalHeight = buffer2.value
+        }
+
+        val config = window.getConfig()
+        bufferFormat = BufferFormat(config.r, config.g, config.b, config.a, config.depth, config.stencil,
+                config.samples, false)
+    }
+
+    private fun update()
+    {
+        val time = clock()
+        if (lastFrameTime == -1)
+            lastFrameTime = time
+        deltaTime = (time - lastFrameTime) / 1000000000.0f
+        lastFrameTime = time
+
+        if (time - frameCounterStart >= 1000000000)
+        {
+            fps = frames
+            frames = 0
+            frameCounterStart = time
+        }
+        frames++
+        frameId++
+    }
+
+    override fun isGL30Available(): Boolean
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getWidth(): Int
+    {
+        return if (window.getConfig().hdpiMode === HdpiMode.Pixels)
+        {
+            backBufferWidth
+        } else
+        {
+            logicalWidth
+        }
+    }
+
+    override fun getHeight(): Int
+    {
+        return if (window.getConfig().hdpiMode === HdpiMode.Pixels)
+        {
+            backBufferHeight
+        } else
+        {
+            logicalHeight
+        }
+    }
+
+    override fun getBackBufferWidth(): Int
+    {backBufferWidth}
+
+    override fun getBackBufferHeight(): Int
+    {backBufferHeight}
+
+    override fun getFrameId(): Long
+    {frameId}
+
+    override fun getDeltaTime(): Float
+    {deltaTime}
+
+    override fun getRawDeltaTime(): Float
+    {deltaTime}
+
+    override fun getFramesPerSecond(): Int
+    {fps }
+
+    override fun getType(): GraphicsType
+    {GraphicsType.GLFW;}
+
+    override fun getPpiX(): Float
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getPpiY(): Float
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getPpcX(): Float
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getPpcY(): Float
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getDensity(): Float
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun supportsDisplayModeChange(): Boolean
+    {
+        true
+    }
+
+    override fun getPrimaryMonitor(): Monitor
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getMonitor(): Monitor
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getMonitors(): Array<Monitor>
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getDisplayModes(): Array<DisplayMode>
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getDisplayModes(monitor: Monitor): Array<DisplayMode>
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getDisplayMode(): DisplayMode
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getDisplayMode(monitor: Monitor): DisplayMode
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setFullscreenMode(displayMode: DisplayMode): Boolean
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setWindowedMode(width: Int, height: Int): Boolean
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setTitle(title: String)
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setUndecorated(undecorated: Boolean)
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setResizable(resizable: Boolean)
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setVSync(vsync: Boolean)
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getBufferFormat(): BufferFormat
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun supportsExtension(extension: String): Boolean
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setContinuousRendering(isContinuous: Boolean)
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun isContinuousRendering(): Boolean
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun requestRendering()
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun isFullscreen(): Boolean
+    {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
 }

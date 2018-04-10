@@ -1,18 +1,21 @@
 package kdx
 
+enum class GraphicsType
+{
+    GLFW, Mock
+}
+
+open class DisplayMode(val width: Int = 0, val height: Int = 0, val refreshRate: Int = 0, val bitsPerPixel: Int = 0)
+
+open class Monitor(val virtualX: Int = 0, val virtualY: Int = 0, val name: String = "")
+
+open class BufferFormat(val r: Int = 0, val g: Int = 0, val b: Int = 0, val a: Int = 0, val depth: Int = 0, val stencil: Int = 0, val samples: Int = 0, val coverageSampling: Boolean = false)
+
+
+
+
 interface Graphics
 {
-    enum class GraphicsType
-    {
-        GLFW, Mock
-    }
-
-    data class DisplayMode protected constructor(val width: Int = 0, val height: Int = 0, val refreshRate: Int = 0, val bitsPerPixel: Int = 0)
-
-    // TODO: don't make it data, so we can make it open...
-    data class Monitor constructor(val virtualX: Int = 0, val virtualY: Int = 0, val name: String = "")
-
-    data class BufferFormat(val r: Int = 0, val g: Int = 0, val b: Int = 0, val a: Int = 0, val depth: Int = 0, val stencil: Int = 0, val samples: Int = 0, val coverageSampling: Boolean = false)
 
 
     fun isGL30Available(): Boolean

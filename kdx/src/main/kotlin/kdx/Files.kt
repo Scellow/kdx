@@ -2,17 +2,17 @@ package kdx
 
 import kdx.files.FileHandle
 
+enum class FileType
+{
+    Classpath,
+    Internal,
+    External,
+    Absolute,
+    Local
+}
+
 interface Files
 {
-    enum class FileType
-    {
-        Classpath,
-        Internal,
-        External,
-        Absolute,
-        Local
-    }
-
     fun getFileHandle(path: String, type: FileType): FileHandle
 
     fun classpath(path: String): FileHandle

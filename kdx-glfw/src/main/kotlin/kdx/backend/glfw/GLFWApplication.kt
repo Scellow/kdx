@@ -5,6 +5,7 @@ import kotlinx.cinterop.*
 import kotlin.math.*
 import konan.worker.*
 import libglfw.*
+import libglew.*
 
 
 class GLFWApplication (listener: ApplicationListener, config: GLFWApplicationConfiguration): Application
@@ -62,7 +63,9 @@ class GLFWApplication (listener: ApplicationListener, config: GLFWApplicationCon
 
             val windowHandle =
                     if (config.fullscreenMode != null)
-                        glfwCreateWindow(config.fullscreenMode.width, config.fullscreenMode.height, config.title, config.fullscreenMode.getMonitor(), null) // TODO: shared context?
+                    {
+                        glfwCreateWindow(config.fullscreenMode!!.width, config.fullscreenMode!!.height, config.title, config.fullscreenMode!!.getMonitor(), null)
+                    } // TODO: shared context?
                     else
                     {
                         glfwWindowHint(GLFW_DECORATED, if (config.windowDecorated) GLFW_TRUE else GLFW_FALSE)
@@ -169,24 +172,24 @@ class GLFWApplication (listener: ApplicationListener, config: GLFWApplicationCon
         glfwTerminate()
     }
 
-    override fun getApplicationListener(): ApplicationListener
+    override fun getApplicationListener(): ApplicationListener?
     {
-        return currentWindow?.getListener()!!
+        return currentWindow?.getListener()
     }
 
-    override fun getGraphics(): Graphics
+    override fun getGraphics(): Graphics?
     {
-        return currentWindow?.getGraphics()!!
+        return currentWindow?.getGraphics()
     }
 
-    override fun getInput(): Input
+    override fun getInput(): Input?
     {
-        return currentWindow?.getInput()!!
+        return currentWindow?.getInput()
     }
 
-    override fun getFiles(): Files
+    override fun getFiles(): Files?
     {
-        return files!!
+        return files
     }
 
     override fun log(tag: String, message: String)
@@ -212,12 +215,12 @@ class GLFWApplication (listener: ApplicationListener, config: GLFWApplicationCon
     override fun debug(tag: String, message: String)
     {
 
-        if (logLevel >= Application.LOG_DEBUG) getApplicationLogger().debug(tag, message)
+        if (logLevel >= Application.LOG_DEBUG) getApplicationLogger()?.debug(tag, message)
     }
 
     override fun debug(tag: String, message: String, exception: Throwable)
     {
-        if (logLevel >= Application.LOG_DEBUG) getApplicationLogger().debug(tag, message, exception)
+        if (logLevel >= Application.LOG_DEBUG) getApplicationLogger()?.debug(tag, message, exception)
 
     }
 
@@ -231,12 +234,12 @@ class GLFWApplication (listener: ApplicationListener, config: GLFWApplicationCon
         return logLevel
     }
 
-    override fun setApplicationLogger(applicationLogger: ApplicationLogger)
+    override fun setApplicationLogger(applicationLogger: ApplicationLogger?)
     {
         this.applicationLogger = applicationLogger
     }
 
-    override fun getApplicationLogger(): ApplicationLogger
+    override fun getApplicationLogger(): ApplicationLogger?
     {
         return applicationLogger
     }
@@ -284,8 +287,8 @@ class GLFWApplication (listener: ApplicationListener, config: GLFWApplicationCon
 
         for (i in 0..1)
         {
-            glClearColor(config.initialBackgroundColor.r, config.initialBackgroundColor.g, config.initialBackgroundColor.b, config.initialBackgroundColor.a)
-            glClear(GL11.GL_COLOR_BUFFER_BIT)
+            glClearColor(0f,0f,0f,1f)
+            glClear(GL_COLOR_BUFFER_BIT)
             glfwSwapBuffers(windowHandle)
         }
     }

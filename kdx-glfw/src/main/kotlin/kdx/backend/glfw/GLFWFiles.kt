@@ -5,7 +5,7 @@ import kdx.files.*
 
 class GLFWFiles : Files
 {
-    override fun getFileHandle(path: String, type: Files.FileType): FileHandle
+    override fun getFileHandle(path: String, type: FileType): FileHandle
     {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }

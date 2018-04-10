@@ -28,7 +28,7 @@ class GLFWWindow(val listener: ApplicationListener, val config: GLFWConfig)
     private var iconified = false
     private var requestRendering = false
 
-    fun create(handle: Long)
+    fun create(handle: CPointer<GLFWwindow>)
     {
         windowHandle = handle
         input = GLFWInput(this)
@@ -129,6 +129,17 @@ class GLFWWindow(val listener: ApplicationListener, val config: GLFWConfig)
     {
         this.windowHandle = windowHandle
         input.windowHandleChanged(windowHandle)
+    }
+
+    fun setVisible(visible: Boolean)
+    {
+        if (visible)
+        {
+            glfwShowWindow(windowHandle)
+        } else
+        {
+            glfwHideWindow(windowHandle)
+        }
     }
 
     fun dispose()

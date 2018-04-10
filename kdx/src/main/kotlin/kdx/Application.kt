@@ -52,13 +52,13 @@ interface Application
         const val LOG_ERROR: Int = 1
     }
 
-    fun getApplicationListener(): ApplicationListener
+    fun getApplicationListener(): ApplicationListener?
 
-    fun getGraphics(): Graphics
+    fun getGraphics(): Graphics?
 
-    fun getInput(): Input
+    fun getInput(): Input?
 
-    fun getFiles(): Files
+    fun getFiles(): Files?
 
 
     fun log(tag: String, message: String)
@@ -77,9 +77,9 @@ interface Application
 
     fun getLogLevel(): Int
 
-    fun setApplicationLogger(applicationLogger: ApplicationLogger)
+    fun setApplicationLogger(applicationLogger: ApplicationLogger?)
 
-    fun getApplicationLogger(): ApplicationLogger
+    fun getApplicationLogger(): ApplicationLogger?
 
     fun getType(): ApplicationType
 
